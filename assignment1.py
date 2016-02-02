@@ -9,6 +9,43 @@ Joram Wessels		10631542
 Compiles using Python version 3.5 with the following command:
 	python assignment1.py -corpus [path] -n [value] -m [value]
 
+Most frequent n-grams:
+	Unigram                         Frequency
+	the                             | 20829
+	to                              | 20042
+	and                             | 18331
+	of                              | 17949
+	a                               | 11135
+	her                             | 11007
+	I                               | 10381
+	was                             | 9409
+	in                              | 9182
+	it                              | 7573
+
+	Bigram                          Frequency
+	of the                          | 2507
+	to be                           | 2233
+	in the                          | 1917
+	I am                            | 1366
+	of her                          | 1264
+	to the                          | 1142
+	it was                          | 1010
+	had been                        | 995
+	she had                         | 978
+	to her                          | 964
+
+	Trigram                         Frequency
+	I do not                        | 378
+	I am sure                       | 366
+	in the world                    | 214
+	she could not                   | 202
+	would have been                 | 189
+	I dare say                      | 174
+	as soon as                      | 173
+	a great deal                    | 173
+	it would be                     | 171
+	could not be                    | 155
+
 Comulative frequencies:
 	unigrams:	617091
 	bigrams:	617091
