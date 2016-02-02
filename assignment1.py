@@ -12,9 +12,9 @@ Compiles using Python version 3.5 with the following command:
 Comulative frequencies:
 	unigrams:	617091
 	bigrams:	617091
+	trigrams:	617091
 	
 """
-
 import sys, argparse, operator
 
 def main():
@@ -25,6 +25,16 @@ def main():
 	prettyPrint(sortedList, M)
 
 def countNGrams(filename, N, M):
+	"""Counts the frequency the n-grams in a corpus.
+	
+	Args:
+		filename (str): The name of the corpus file.
+		N (int): The size of the n-grams.
+		M (int): The amount of most frequent n-grams to print.
+	Returns:
+		dict: The frequencies, linked to the n-grams.
+	
+	"""
 	ngram = nGramGenerator(filename, N)
 	frequencies = {}
 	for gram in ngram:
@@ -36,6 +46,15 @@ def countNGrams(filename, N, M):
 	return frequencies
 
 def nGramGenerator(filename, N):
+	"""Returns a generator that yields n-grams from a file.
+	
+	Args:
+		filename (str): The name of the corpus file.
+		N (int): The size of the n-grams.
+	Yields:
+		list: The tokenized n-gram.
+	
+	"""
 	with open(filename, 'r') as file:
 		buffer = [""]*N
 		for line in file:
@@ -77,6 +96,8 @@ def parseArgs(args):
 		"-m",
 		metavar='M',
 		type=int,
+		required=False,
+		default=5,
 		help="The amount of most probable n-grams to print.")
 	parsed = parser.parse_args(args)
 	return parsed.corpus[0], parsed.n, parsed.m
