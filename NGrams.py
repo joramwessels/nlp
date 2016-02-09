@@ -23,7 +23,7 @@ class Buffer:
 		self.buffer.insert(self.N-1, symbol)
 		return self.buffer
 	
-	def stop(self):
+	def end(self):
 		return self.next(self.stop)
 
 def nGramGenerator(filename, N, start_symbol="START", stop_symbol="STOP"):
@@ -38,14 +38,15 @@ def nGramGenerator(filename, N, start_symbol="START", stop_symbol="STOP"):
 	"""
 	with open(filename, 'r') as file:
 		buffer = Buffer(N, start_symbol, stop_symbol)
+		length = len(list(file))
 		try:
 			while True:
 				line = next(file)
 				# End of paragraph
 				if line.strip() == '':
 					for i in range(N-1):
-						yield buffer.stop()
-					while line.strip() == '' and i < len(file):
+						yield buffer.end()
+					while line.strip() == '' and i < length:
 						i += 1
 						line = next(file)
 					buffer.flush()
