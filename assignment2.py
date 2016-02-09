@@ -29,15 +29,15 @@ def main():
 	sortedN_min_1.reverse()
 	
 	# Calculating probabilities
-	nGramProbs = question2(sortedN, sortedN_min_1, parsed["conditional_prob_file"][0])
+	nGramProbs = question2(sortedN, sortedN_min_1, parsed["conditional_prob_file"][0], parsed["n"])
 	sentenceProbs = question3(nGramProbs, parsed["sequence_prob_file"][0], parsed["n"])
 	permutations = question4(sentenceProbs, parsed["scored_permutations"][0])
 	print(nGramProbs, sentenceProbs, permutations)
 
-def question2(NGrams, NMin1Grams, filename):
+def question2(NGrams, NMin1Grams, filename, n):
 	if NGrams == None or NMin1Grams == None or filename == None:
 		return None
-	return q2.probabilities(NGrams, NMin1Grams, filename)
+	return q2.probabilities(NGrams, NMin1Grams, filename, n)
 
 def question3(NGramProbs, filename, N):
 	if NGramProbs == None or filename == None:
