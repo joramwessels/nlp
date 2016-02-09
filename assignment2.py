@@ -23,13 +23,13 @@ def main():
 	# Counting N- and (N-1)-Grams
 	N_freq = countNGrams(parsed["corpus"][0], parsed["n"])
 	N_min_1_freq = countNGrams(parsed["corpus"][0], parsed["n"]-1)
-	sortedN = sorted(N_freq.items(), key=operator.itemgetter(1))
-	sortedN.reverse()
-	sortedN_min_1 = sorted(N_min_1_freq.items(), key=operator.itemgetter(1))
-	sortedN_min_1.reverse()
+	#sortedN = sorted(N_freq.items(), key=operator.itemgetter(1))
+	#sortedN.reverse()
+	#sortedN_min_1 = sorted(N_min_1_freq.items(), key=operator.itemgetter(1))
+	#sortedN_min_1.reverse()
 	
 	# Calculating probabilities
-	nGramProbs = question2(sortedN, sortedN_min_1, parsed["conditional_prob_file"][0], parsed["n"])
+	nGramProbs = question2(N_freq, N_min_1_freq, parsed["conditional_prob_file"][0], parsed["n"])
 	sentenceProbs = question3(nGramProbs, parsed["sequence_prob_file"][0], parsed["n"])
 	permutations = question4(sentenceProbs, parsed["scored_permutations"][0])
 	print(nGramProbs, sentenceProbs, permutations)
