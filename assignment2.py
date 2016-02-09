@@ -19,20 +19,29 @@ import question2_4 as q4
 
 def main():
 	parsed = parseArgs(sys.argv[1:])
+	corpus = parsed["corpus"][0]
+	CPF = parsed["conditional_prob_file"][0]
+	SPF = parsed["sequence_prob_file"][0]
+	SP = parsed["scored_permutations"][0]
+	N = parsed["n"]
+	question1(corpus)
 	
 	# Counting N- and (N-1)-Grams
-	N_freq = countNGrams(parsed["corpus"][0], parsed["n"])
-	N_min_1_freq = countNGrams(parsed["corpus"][0], parsed["n"]-1)
-	#sortedN = sorted(N_freq.items(), key=operator.itemgetter(1))
-	#sortedN.reverse()
-	#sortedN_min_1 = sorted(N_min_1_freq.items(), key=operator.itemgetter(1))
-	#sortedN_min_1.reverse()
+	N_freq = countNGrams(corpus, N)
+	N_min_1_freq = countNGrams(corpus, N-1)
 	
 	# Calculating probabilities
-	nGramProbs = question2(N_freq, N_min_1_freq, parsed["conditional_prob_file"][0], parsed["n"])
-	sentenceProbs = question3(nGramProbs, parsed["sequence_prob_file"][0], parsed["n"])
-	permutations = question4(sentenceProbs, parsed["scored_permutations"][0])
+	nGramProbs = question2(N_freq, N_min_1_freq, CPF, N)
+	sentenceProbs = question3(nGramProbs, SPF, N)
+	permutations = question4(sentenceProbs, SP)
 	print(nGramProbs, sentenceProbs, permutations)
+
+def question1(filename, N=2, M=10):
+	freq = countNGrams(filename, N)
+	sortedList = sorted(freq.items(), key=operator.itemgetter(1))
+	sortedList.reverse()
+	sortedList.insert(0, ("Bigram", "Frequency"))
+	prettyPrint(sortedList, M+1)
 
 def question2(NGrams, NMin1Grams, filename, n):
 	if NGrams == None or NMin1Grams == None or filename == None:
@@ -50,9 +59,13 @@ def question4(sentenceProbs, filename):
 	return q4.probabilities(sentenceProbs, filename)
 
 def prettyPrint(list, M):
-	print("NGram\t\t\t\tFrequency")
-	for i in range(M):
-		print(list[i][0],"\t\t\t\t|",list[i][1])
+	slice = list[:M]
+	lengths = [max([len(str(tuple[i])) for tuple in slice]) for i in range(len(list[0]))]
+	for row in slice:
+		for i in range(len(row)-1):
+			print(row[i], end='')
+			[print(' ', end='') for j in range(lengths[i] + 1 - len(row[i]))]
+		print(row[len(row)-1])
 
 def parseArgs(args):
 	"""Parses the arguments using argparse.

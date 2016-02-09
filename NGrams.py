@@ -38,7 +38,6 @@ def nGramGenerator(filename, N, start_symbol="START", stop_symbol="STOP"):
 	"""
 	with open(filename, 'r') as file:
 		buffer = Buffer(N, start_symbol, stop_symbol)
-		length = len(list(file))
 		try:
 			while True:
 				line = next(file)
@@ -46,8 +45,7 @@ def nGramGenerator(filename, N, start_symbol="START", stop_symbol="STOP"):
 				if line.strip() == '':
 					for i in range(N-1):
 						yield buffer.end()
-					while line.strip() == '' and i < length:
-						i += 1
+					while line.strip() == '':
 						line = next(file)
 					buffer.flush()
 				# Reading paragraph
