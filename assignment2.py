@@ -30,22 +30,22 @@ def main():
 	
 	# Calculating probabilities
 	nGramProbs = question2(sortedN, sortedN_min_1, parsed["conditional_prob_file"][0])
-	sentenceProbs = question3(nGramProbs, parsed["sequence_prob_file"][0])
+	sentenceProbs = question3(nGramProbs, parsed["sequence_prob_file"][0], parsed["n"])
 	permutations = question4(sentenceProbs, parsed["scored_permutations"][0])
 	print(nGramProbs, sentenceProbs, permutations)
 
 def question2(NGrams, NMin1Grams, filename):
-	if filename == None:
+	if NGrams == None or NMin1Grams == None or filename == None:
 		return None
 	return q2.probabilities(NGrams, NMin1Grams, filename)
 
-def question3(NGramProbs, filename):
-	if filename == None:
+def question3(NGramProbs, filename, N):
+	if NGramProbs == None or filename == None:
 		return None
-	return q3.probabilities(NGramProbs, filename)
+	return q3.probabilities(NGramProbs, filename, N)
 
 def question4(sentenceProbs, filename):
-	if filename == None:
+	if sentenceProbs == None or filename == None:
 		return None
 	return q4.probabilities(sentenceProbs, filename)
 
