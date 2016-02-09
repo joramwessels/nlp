@@ -7,19 +7,43 @@ Maurits Offerhaus	1040036
 Joram Wessels		10631542
 
 Compiles using Python version 3.5 with the following command:
-	python assignment2.py
+	assignment2.py -corpus [path] -n [value] -conditional-prob-file [path]
 
 """
 import sys, argparse, operator
+import question2_2 as q2
+import question2_3 as q3
+import question2_4 as q4
 
 def main():
-	filename, N, M = parseArgs(sys.argv[1:])
-	frequencies = countNGrams(filename, N, M)
-	sortedList = sorted(frequencies.items(), key=operator.itemgetter(1))
-	sortedList.reverse()
-	prettyPrint(sortedList, M)
+	parsed = parseArgs(sys.argv[1:])
+	N_freq = countNGrams(parsed["corpus"][0], parsed["n"])
+	N_min_1_freq = countNGrams(parsed["corpus"][0], parsed["n"]-1)
+	sortedN = sorted(N_freq.items(), key=operator.itemgetter(1))
+	sortedN.reverse()
+	sortedN_min_1 = sorted(N_min_1_freq.items(), key=operator.itemgetter(1))
+	sortedN_min_1.reverse()
+	nGramProbs = question2(sortedN, sortedN_min_1, parsed["conditional_prob_file"][0])
+	sentenceProbs = question3(nGramProbs, parsed["sequence_prob_file"][0])
+	permutations = question4(sentenceProbs, parsed["scored_permutations"][0])
+	print(nGramProbs, sentenceProbs, permutations)
 
-def countNGrams(filename, N, M):
+def question2(NGrams, NMin1Grams, filename):
+	if filename == None:
+		return {}
+	return q2.probabilities(NGrams, NMin1Grams, filename)
+
+def question3(NGramProbs, filename):
+	if filename == None:
+		return {}
+	return q3.probabilities(NGramProbs, filename)
+
+def question4(sentenceProbs, filename):
+	if filename == None:
+		return {}
+	return q4.probabilities(sentenceProbs, filename)
+
+def countNGrams(filename, N):
 	"""Counts the frequency the n-grams in a corpus.
 	
 	Args:
@@ -93,14 +117,31 @@ def parseArgs(args):
 		type=int,
 		help="The 'n' order of the n-grams.")
 	parser.add_argument(
-		"-m",
-		metavar='M',
-		type=int,
+		"-conditional-prob-file",
+		metavar='CO',
+		type=str,
+		nargs=1,
 		required=False,
-		default=5,
-		help="The amount of most probable n-grams to print.")
-	parsed = parser.parse_args(args)
-	return parsed.corpus[0], parsed.n, parsed.m
+		default=[None],
+		help="The path to the conditional probability file.")
+	parser.add_argument(
+		"-sequence-prob-file",
+		metavar='SE',
+		type=str,
+		nargs=1,
+		required=False,
+		default=[None],
+		help="The path to the sequence probability file.")
+	parser.add_argument(
+		"-scored-permutations",
+		metavar='SC',
+		type=str,
+		nargs=1,
+		required=False,
+		default=[None],
+		help="The path to the scored permutations file.")
+	parsed = vars(parser.parse_args(args))
+	return parsed
 
 if __name__ == "__main__":
 	main()
