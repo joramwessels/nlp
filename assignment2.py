@@ -8,6 +8,7 @@ Joram Wessels		10631542
 
 Compiles using Python version 3.5 with the following command:
 	assignment2.py -corpus [path] -n [value] -conditional-prob-file [path]
+		-sequence-prob-file [path] -scored-permutations [path]
 
 """
 import sys, argparse, operator
