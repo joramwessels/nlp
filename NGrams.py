@@ -26,35 +26,44 @@ class Buffer:
 	def end(self):
 		return self.next(self.stop)
 
-def nGramGenerator(filename, N, start_symbol="START", stop_symbol="STOP"):
+def nGramGenerator(sentence, N, start_symbol="START", stop_symbol="STOP"):
+	"""Creates N-grams given a tokenized sentence.
+	
+	Args:
+		sentence (list): A list with the words of the sentence.
+		N (int): The N-value of the N-grams.
+		start_symbol (str): (optional) The representation of a sentence start.
+		stop_symbol (str): (optional) The representation of a sentence stop.
+	Yields:
+		str: The next N-Gram.
+	
+	"""
+	buffer = Buffer(N, start_symbol, stop_symbol)
+	sentence.extend([stop_symbol]*(N-1))
+	for word in sentence:
+		yield ' '.join(buffer.next(word))
+
+def nGramsFromCorpus(filename, N, line_end='\n\n', word_end=' '):
 	"""Returns a generator that yields n-grams from a file.
 	
 	Args:
 		filename (str): The name of the corpus file.
 		N (int): The size of the n-grams.
+		line_end (str): (optional) The separator between sentences.
+		word_end (str): (optional) The separator between words.
 	Yields:
 		list: The tokenized n-gram.
 	
 	"""
 	with open(filename, 'r') as file:
-		buffer = Buffer(N, start_symbol, stop_symbol)
-		try:
-			while True:
-				line = next(file)
-				# End of paragraph
-				if line.strip() == '':
-					for i in range(N-1):
-						yield buffer.end()
-					while line.strip() == '':
-						line = next(file)
-					buffer.flush()
-				# Reading paragraph
-				sentence = line.strip().split(" ")
-				for word in sentence:
-					if word != '':
-						yield buffer.next(word)
-		except StopIteration:
-			pass
+		corpus = ''.join(file.readlines())
+		sentences = corpus.split(line_end)
+		for sent in sentences:
+			if sent != '':
+				sentence = [w for w in sent.strip().split(word_end) if w != '']
+				ngrams = nGramGenerator(sentence, N)
+				for gram in ngrams:
+					yield gram
 
 def countNGrams(filename, N):
 	"""Counts the frequency the n-grams in a corpus.
@@ -67,10 +76,9 @@ def countNGrams(filename, N):
 		dict: The frequencies, linked to the n-grams.
 	
 	"""
-	ngram = nGramGenerator(filename, N)
+	ngrams = nGramsFromCorpus(filename, N)
 	frequencies = {}
-	for gram in ngram:
-		key = " ".join(gram)
+	for key in ngrams:
 		if not key in frequencies.keys():
 			frequencies[key] = 1
 		else:
