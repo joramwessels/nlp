@@ -1,7 +1,7 @@
 #! /usr/bin/python
 
 def probabilities(NGrams, NMin1Grams, conditional_prob_file, n):
-	nGramProbs = []
+	nGramProbs = {}
 	with open(conditional_prob_file, 'r') as file:
 		lines = file.readlines()
 
@@ -12,22 +12,20 @@ def probabilities(NGrams, NMin1Grams, conditional_prob_file, n):
 				continue
 
 			NMin1Gram = ' '.join(split_line[:n-1])
-			print(NMin1Gram)
-			if NMin1Gram in NMin1Grams:
-				NMin1Grams_freq = NMin1Grams[original_line]
-				print("penis")
+			if NMin1Gram in NMin1Grams.keys():
+				NMin1Grams_freq = NMin1Grams[NMin1Gram]
 			else:
-				NMin1Grams_freq = 1
+				NMin1Grams_freq = 0.000000000000000001
 
 			ngram = ' '.join(split_line[:n])
-			if ngram in NGrams:
+			if ngram in NGrams.keys():
 				ngram_freq = NGrams[ngram]
 			else:
-				ngram_freq = 2
+				ngram_freq = 0
 
 			nGramProb = ngram_freq / NMin1Grams_freq
-			nGramProbs.append(nGramProb)
-
+			nGramProbs[ngram] = nGramProb
+		
 		#print(nGramProbs)
 
 	return nGramProbs

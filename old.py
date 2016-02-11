@@ -32,7 +32,7 @@ def main():
 	nGramProbs = question2(N_freq, N_min_1_freq, parsed["conditional_prob_file"][0], parsed["n"])
 	sentenceProbs = question3(nGramProbs, parsed["sequence_prob_file"][0], parsed["n"])
 	permutations = question4(sentenceProbs, parsed["scored_permutations"][0])
-	print(nGramProbs,"\n", sentenceProbs,"\n", permutations)
+	print(nGramProbs, sentenceProbs, permutations)
 
 def question2(NGrams, NMin1Grams, filename, n):
 	if NGrams == None or NMin1Grams == None or filename == None:
