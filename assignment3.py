@@ -12,9 +12,15 @@ Compiles using Python version 3.5 with the following command:
 
 """
 import sys, argparse
+from languageModel import LanguageModel
 
 def main():
 	train, test, N, smoothing = parseArgs(sys.argv[1:])
+	model = LanguageModel(train, N)
+	model.setSmoothing(smoothing)
+	print("Test an N-gram:\n >>", end='')
+	for ngram in sys.stdin:
+		print("Probability: %.5f" %(model.NGramProb(ngram)), end='\n >>')
 
 def parseArgs(args):
 	"""Parses the arguments using argparse.
@@ -54,8 +60,7 @@ def parseArgs(args):
 		choices=['no', 'add1', 'gt'],
 		help="The smoothing method applied to the predictions.")
 	parsed = vars(parser.parse_args(args))
-	print(parsed)
-	return parsed.train_corpus, parsed.test_corpus, parsed.n, parsed.smoothing
+	return parsed["train_corpus"], parsed["test_corpus"], parsed["n"], parsed["smoothing"]
 
 if __name__ == "__main__":
 	main()

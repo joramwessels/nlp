@@ -10,10 +10,16 @@ class LanguageModel:
 		"""A LanguageModel object builds a model using the frequencies of the
 			N-grams and (N-1)-grams found in the corpus, and enables the
 			calculation of the probability of any given N-gram using that model.
+		
+		Args:
+			filename (str): The name of the corpus to train on.
+			N (int): The N value of the N-grams, where N > 1.
+		
 		"""
+		if N < 2: return
 		self.Nfreq = countNGrams(filename, N)
 		self.N1freq = countNGrams(filename, N-1)
-		self.setNoSmoothing()
+		self.setSmoothing('no')
 	
 	def NGramProb(self, ngram):
 		"""Calculates the probability of an N-gram using the language model.
@@ -26,27 +32,19 @@ class LanguageModel:
 		"""
 		return self.probability(ngram)
 	
-	def setNoSmoothing(self):
-		"""Disables smoothing.
-		
-		"""
-		self.probability = noSmoothing(self.Nfreq, self.N1freq)
-	
-	def setAdditiveSmoothing(self, alpha):
-		"""Sets the smoothing method to Additive (Laplace) Smoothing.
+	def setSmoothing(self, flag):
+		"""Sets the smoothing method for the predictions.
 		
 		Args:
-			alpha (int): The amount added to each frequency.
+			flag (str): The flag of the method: 'no', 'add1', or 'gt'.
 		
 		"""
-		self.probability = additiveSmoothing(self.Nfreq, self.N1freq, alpha)
-	
-	def setTuringSmoothing(self):
-		"""Sets the smoothing method to Good Turing Smoothing.
-		
-		"""
-		self.probability = turingSmoothing(self.Nfreq, self.N1freq)
-
+		if flag == 'no':
+			self.probability = noSmoothing(self.Nfreq, self.N1freq)
+		elif flag == 'add1':
+			self.probability = additiveSmoothing(self.Nfreq, self.N1freq, 1)
+		elif flag == 'gt':
+			self.probability = conditionalTuringSmoothing(self.Nfreq, self.N1freq)
 
 def frequency(freq, elem):
 	"""Returns the value of the given key if present, or 0 otherwise.
@@ -79,6 +77,7 @@ def noSmoothing(Nfreq, N1freq):
 		n1gram = ngram.split(' ')[:-1]
 		PN = frequency(Nfreq, ngram) / Ntotal
 		PN1 = frequency(N1freq, n1gram) / N1total
+		if PN1 == 0: return 0
 		return PN / PN1
 	return probability
 
@@ -99,8 +98,17 @@ def additiveSmoothing(Nfreq, N1freq, alpha):
 		n1gram = ngram.split(' ')[:-1]
 		PN = (frequency(Nfreq, ngram) + alpha) / Ntotal
 		PN1 = (frequency(N1freq, n1gram) + alpha) / N1total
+		if PN1 == 0: return 0
 		return PN / PN1
 	return probability
+
+def gts(ngram, N, Nfreq):
+	C = frequency(Nfreq, ngram)
+	if C == 0:
+		return frequency(N, 1) / sum(N.values())
+	Nc = frequency(N, C)
+	Nc1 = frequency(N, C+1)
+	return ((C + 1) * Nc1) / Nc
 
 def turingSmoothing(Nfreq, N1freq):
 	"""Returns a closure that calculates probability using Turing Smoothing.
@@ -118,14 +126,9 @@ def turingSmoothing(Nfreq, N1freq):
 	N1 = dict([(i, N1values.count(i)) for i in range(max(N1values))])
 	def probability(ngram):
 		n1gram = ngram.split(' ')[:-1]
-		C = frequency(Nfreq, ngram)
-		Nc = frequency(N, C)
-		Nc1 = frequency(N, C+1)
-		PN = ((C + 1) * Nc1) / Nc
-		C1 = frequency(N1freq, n1gram)
-		N1c = frequency(N1, C1)
-		N1c1 = frequency(N1, C1+1)
-		PN = ((C1 + 1) * N1c1) / N1c
+		PN = gts(ngram, N, Nfreq)
+		PN1 = gts(n1gram, N1, N1freq)
+		if PN1 == 0: return 0
 		return PN / PN1
 
 def conditionalTuringSmoothing(Nfreq, N1freq, max_k=5):
