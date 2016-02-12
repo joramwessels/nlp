@@ -16,11 +16,42 @@ from languageModel import LanguageModel
 
 def main():
 	train, test, N, smoothing = parseArgs(sys.argv[1:])
-	model = LanguageModel(train, N)
+	model = question1(train, N)
 	model.setSmoothing(smoothing)
 	print("Test an N-gram:\n >>", end='')
 	for ngram in sys.stdin:
 		print("Probability: %.5f" %(model.NGramProb(ngram)), end='\n >>')
+
+def question1(corpus, N):
+	return LanguageModel(train, N)
+
+def question2(model, N, test):
+	pass
+
+def question3():
+	pass
+
+def sentenceProbabilities(model, N, start="START", stop="STOP"):
+	"""Constructs a closure calculating sentence probabilities.
+	
+	Args:
+		model (LanguageModel): A language model able to calculate N-gram probs.
+		N (int): The N value of the N-grams.
+		start (str): (optional) The symbol for the start of a sentence.
+		stop (str): (optional) The symbol for the end of a sentence.
+	Returns:
+		func: A closure calculating the probability of a sentence.
+	
+	"""
+	def func(line):
+		words = [start]*(N-1) + line.strip().split(' ') + [stop]*(N-1)
+		words = [word for word in words if not word == '']
+		ngrams = [words[i:(i+N)] for i in range(len(words)-(N-1))]
+		prob = 1
+		for ngram in ngrams:
+			prob *= model.NGramProb(" ".join(ngram))
+		return prob
+	return func
 
 def parseArgs(args):
 	"""Parses the arguments using argparse.
@@ -55,7 +86,7 @@ def parseArgs(args):
 		"-smoothing",
 		metavar='[no|add1|gt]',
 		type=str,
-		required=True,
+		required=False,
 		default='no',
 		choices=['no', 'add1', 'gt'],
 		help="The smoothing method applied to the predictions.")
