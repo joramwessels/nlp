@@ -8,14 +8,12 @@ Joram Wessels		10631542
 
 Compiles using Python version 3.5 with the following command:
 	assignment2.py -corpus [path] -n [value] -conditional-prob-file [path]
-		-sequence-prob-file [path] -scored-permutations [path]
+		-sequence-prob-file [path] -scored-permutations
 
 """
-import sys, argparse, operator
+import sys, argparse
+from operator import itemgetter
 from NGrams import countNGrams
-import question2_2 as q2
-import question2_3 as q3
-import question2_4 as q4
 
 def main():
 	parsed = parseArgs(sys.argv[1:])
@@ -101,7 +99,9 @@ def question2(NGramProbs, filename, N):
 	
 	"""
 	if (NGramProbs == None or filename == None): return
-	q2.probabilities(NGramProbs, filename, N)
+	# TODO
+	printList.insert(0, ("N-gram", "Probability"))
+	prettyPrint(printList, len(printList))
 
 def question3(sentenceProb, filename, N):
 	"""Prints the probabilities of the sentences in the given file.
@@ -134,13 +134,9 @@ def question4(sentenceProb, scoredPermutations):
 	PermsOfA = list(itertools.permutations(setA))
 	PermsOfB = list(itertools.permutations(setB))
 	
-	prob = {}
-	for permA,PermB in zip(PermsOfA,PermsOfB):
-		permA = " ".join(permA)
-		prob[permA] = sentenceProbs(permA)
-		permB = " ".join(permB)
-		prob[permB] = sentenceProbs(permB)
-	printList = list(prob)
+	prob = [' '.join(permA) for permA in PermsOfA]
+	prob.extend([' '.join(permB) for permB in PermsOfB])
+	printList = [(perm, sentenceProb(perm)) for perm in prob]
 	printList.insert(0, ("Permutation", "Probability"))
 	prettyPrint(printList, len(printList))
 
@@ -176,11 +172,13 @@ def parseArgs(args):
 		metavar='[path]',
 		type=str,
 		nargs=1,
+		required=True,
 		help="The path to the corpus.")
 	parser.add_argument(
 		"-n",
 		metavar='[value]',
 		type=int,
+		required=True,
 		help="The 'n' order of the n-grams.")
 	parser.add_argument(
 		"-conditional-prob-file",
@@ -200,8 +198,7 @@ def parseArgs(args):
 		help="The path to the sequence probability file.")
 	parser.add_argument(
 		"-scored-permutations",
-		type=str,
-		nargs=0,
+		action='store_true',
 		required=False,
 		help="The path to the scored permutations file.")
 	parsed = vars(parser.parse_args(args))
