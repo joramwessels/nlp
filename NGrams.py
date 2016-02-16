@@ -56,15 +56,27 @@ def nGramsFromCorpus(filename, N, line_end='\n\n', word_end=' '):
 		list: The tokenized n-gram.
 	
 	"""
+	sentences = sentencesFromCorpus(filename, line_end=line_end)
+	for sent in sentences:
+		sentence = [w for w in sent.strip().split(word_end) if w != '']
+		ngrams = nGramGenerator(sentence, N)
+		for gram in ngrams:
+			yield gram
+
+def sentencesFromCorpus(filename, line_end='\n\n'):
+	"""Tokenizes a corpus into sentences.
+	
+	Args:
+		filename (str): The name of the corpus file.
+		line_end (str): (optional) The separator between sentences.
+	Returns:
+		list: The tokenized sentences.
+	
+	"""
 	with open(filename, 'r') as file:
 		corpus = ''.join(file.readlines())
-		sentences = corpus.split(line_end)
-		for sent in sentences:
-			if sent != '':
-				sentence = [w for w in sent.strip().split(word_end) if w != '']
-				ngrams = nGramGenerator(sentence, N)
-				for gram in ngrams:
-					yield gram
+		sentences = [sent for sent in corpus.split(line_end) if sent != '']
+	return sentences
 
 def countNGrams(filename, N):
 	"""Counts the frequency the n-grams in a corpus.

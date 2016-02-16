@@ -1,7 +1,5 @@
 #! /usr/bin/python
 
-# TODO: divide-by-zero in probabilities, Turing Smoothing for N0?
-
 from NGrams import countNGrams
 
 class LanguageModel:
@@ -17,6 +15,7 @@ class LanguageModel:
 		
 		"""
 		if N < 2: return
+		self.N = N
 		self.Nfreq = countNGrams(filename, N)
 		self.N1freq = countNGrams(filename, N-1)
 		self.setSmoothing('no')
@@ -130,6 +129,7 @@ def turingSmoothing(Nfreq, N1freq):
 		PN1 = gts(n1gram, N1, N1freq)
 		if PN1 == 0: return 0
 		return PN / PN1
+	return probability
 
 def conditionalTuringSmoothing(Nfreq, N1freq, max_k=5):
 	"""Returns a closure that calculates N-gram probability, using Turing
