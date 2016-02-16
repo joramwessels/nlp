@@ -84,7 +84,7 @@ def question1(filename, N=2, M=10):
 	
 	"""
 	freq = countNGrams(filename, N)
-	sortedList = sorted(freq.items(), key=operator.itemgetter(1))
+	sortedList = sorted(freq.items(), key=itemgetter(1))
 	sortedList.reverse()
 	sortedList.insert(0, ("Bigram", "Frequency"))
 	prettyPrint(sortedList, M+1)
@@ -99,7 +99,35 @@ def question2(NGramProbs, filename, N):
 	
 	"""
 	if (NGramProbs == None or filename == None): return
-	# TODO
+	nGramProbs = {}
+	with open(conditional_prob_file, 'r') as file:
+		lines = file.readlines()
+		
+		for line in lines:
+			original_line = line.strip()
+			split_line = original_line.split()
+			if len(split_line) != n:
+				continue
+			
+			NMin1Gram = ' '.join(split_line[:n-1])
+			if NMin1Gram in NMin1Grams.keys():
+				NMin1Grams_freq = NMin1Grams[NMin1Gram]
+			else:
+				NMin1Grams_freq = 0
+			
+			ngram = ' '.join(split_line[:n])
+			if ngram in NGrams.keys():
+				ngram_freq = NGrams[ngram]
+			else:
+				ngram_freq = 0
+			
+			if nMin1Grams == 0:
+				nGramProbs[ngram] = 0
+			else:
+				nGramProb = ngram_freq / NMin1Grams_freq
+				nGramProbs[ngram] = nGramProb
+
+	printList = [(key, val) for key, val in nGramProbs.items()]
 	printList.insert(0, ("N-gram", "Probability"))
 	prettyPrint(printList, len(printList))
 
@@ -115,7 +143,7 @@ def question3(sentenceProb, filename, N):
 	if (sentenceProb == None or filename == None): return
 	
 	with open(filename, 'r') as file:
-		probabilities = [(line, sentenceProb(line)) for line in file]
+		printList = [(line, sentenceProb(line)) for line in file]
 	printList.insert(0, ("Sentence", "Probability"))
 	prettyPrint(printList, len(printList))
 
