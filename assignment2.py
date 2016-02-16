@@ -29,32 +29,48 @@ def main():
 	N_min_1_freq = countNGrams(corpus, N-1)
 	
 	# Calculating probabilities
-	nGramProbs = NGramProbabilities(N_freq, N_min_1_freq,N)
-	question2(nGramProbs, CPF, N)
-	sentenceProb = sentenceProbabilities(NGramProbs, N)
+	nGramProb = NGramProbabilities(N_freq, N_min_1_freq)
+	question2(nGramProb, CPF, N)
+	sentenceProb = sentenceProbabilities(NGramProb, N)
 	question3(sentenceProb, SPF, N)
 	question4(sentenceProbs, SP)
 
-def NGramProbabilities(N_freq, N_min_1_freq,n):
-	"""Constructs a dictionary mapping N-grams to their probability.
+def frequency(freq, elem):
+	"""Returns the value of the given key if present, or 0 otherwise.
+	
+	Args:
+		freq (dict): A dictionary.
+		elem: Any type of element of which the frequency is requested.
+	Returns:
+		int: The frequency of the element in the dicionary.
+	
+	"""
+	if elem in list(freq.keys()):
+		return freq[elem]
+	else:
+		return 0
+
+def NGramProbabilities(N_freq, N_min_1_freq):
+	"""Constructs a closure mapping N-grams to their probability.
 	
 	Args:
 		N_freq (dict): A dictionary mapping N-grams to their frequency.
 		N_min_1_freq (dict): A dictionary mapping (N-1)-grams to their frequency.
 	Returns:
-		dict: A dictionary mapping N-grams to their probability.
+		func: A closure mapping N-grams to their probability.
 	
 	"""
 	nGramProbs = {}
-	for nGram in N_freq.keys():
-		split_line = nGram.strip().split()
-		NMin1Gram = ' '.join(split_line[:n-1])
-		nGramProb = N_freq[nGram] / N_min_1_freq[NMin1Gram]
-		nGramProbs[nGram] = nGramProb
+	def probability(nGram):
+		split_line = nGram.strip().split(' ')
+		NMin1Gram = ' '.join(split_line[:-1])
+		PN = frequency(N_freq, nGram)
+		PN1 = frequency(N_min_1_freq, NMin1Gram)
+		if PN1 == 0: return 0
+		return PN / PN1
+	return probability
 
-	return nGramProbs
-
-def SentenceProbabilities(NGramProbs, N, start="START", stop="STOP"):
+def SentenceProbabilities(NGramProb, N, start="START", stop="STOP"):
 	"""Constructs a closure calculating sentence probabilities.
 	
 	Args:
@@ -73,7 +89,7 @@ def SentenceProbabilities(NGramProbs, N, start="START", stop="STOP"):
 		prob = 1
 		for ngram in ngrams:
 			try:
-				prob *= NGramProbs[" ".join(ngram)]
+				prob *= NGramProb(" ".join(ngram))
 			except KeyError:
 				prob = 0
 		return prob
@@ -88,13 +104,14 @@ def question1(filename, N=2, M=10):
 		M (int): (optional) The amount of most N-grams printed (10 is requested)
 	
 	"""
+	print("Question 1")
 	freq = countNGrams(filename, N)
 	sortedList = sorted(freq.items(), key=itemgetter(1))
 	sortedList.reverse()
 	sortedList.insert(0, ("Bigram", "Frequency"))
 	prettyPrint(sortedList, M+1)
 
-def question2(NGramProbs, filename, N):
+def question2(NGramProb, filename, N):
 	"""Prints the probabilities of the N-grams in the given file.
 	
 	Args:
@@ -103,38 +120,18 @@ def question2(NGramProbs, filename, N):
 		N (int): The N value of the N-grams.
 	
 	"""
-	if (NGramProbs == None or filename == None): return
-	nGramProbs = {}
-	with open(conditional_prob_file, 'r') as file:
-		lines = file.readlines()
-		
-		for line in lines:
-			original_line = line.strip()
-			split_line = original_line.split()
-			if len(split_line) != n:
-				continue
-			
-			NMin1Gram = ' '.join(split_line[:n-1])
-			if NMin1Gram in NMin1Grams.keys():
-				NMin1Grams_freq = NMin1Grams[NMin1Gram]
-			else:
-				NMin1Grams_freq = 0
-			
-			ngram = ' '.join(split_line[:n])
-			if ngram in NGrams.keys():
-				ngram_freq = NGrams[ngram]
-			else:
-				ngram_freq = 0
-			
-			if nMin1Grams == 0:
-				nGramProbs[ngram] = 0
-			else:
-				nGramProb = ngram_freq / NMin1Grams_freq
-				nGramProbs[ngram] = nGramProb
-
-	printList = [(key, val) for key, val in nGramProbs.items()]
-	printList.insert(0, ("N-gram", "Probability"))
-	prettyPrint(printList, len(printList))
+	if (NGramProb == None or filename == None): return
+	print("Question 2")
+	probabilities = []
+	with open(filename, 'r') as file:
+		for line in file:
+			gram = line.strip().split(' ')
+			if len(gram) == N:
+				NMin1Gram = ' '.join(gram[:-1])
+				NGram = ' '.join(gram)
+				probabilities.append((NGram, NGramProb(NGram)))
+	probabilities.insert(0, ("N-gram", "Probability"))
+	prettyPrint(probabilities, len(probabilities))
 
 def question3(sentenceProb, filename, N):
 	"""Prints the probabilities of the sentences in the given file.
@@ -146,7 +143,7 @@ def question3(sentenceProb, filename, N):
 	
 	"""
 	if (sentenceProb == None or filename == None): return
-	
+	print("Question 3")
 	with open(filename, 'r') as file:
 		printList = [(line, sentenceProb(line)) for line in file]
 	printList.insert(0, ("Sentence", "Probability"))
@@ -161,7 +158,7 @@ def question4(sentenceProb, scoredPermutations):
 	
 	"""
 	if (sentenceProb == None or not scoredPermutations): return
-	
+	print("Question 4")
 	setA = ["know","I","opinion","do","be","your","not","may","what"]
 	setB = ["I","do","not","know"]
 	PermsOfA = list(itertools.permutations(setA))
@@ -183,6 +180,7 @@ def prettyPrint(list, M):
 	"""
 	slice = list[:M]
 	lengths = [max([len(str(tuple[i])) for tuple in slice]) for i in range(len(list[0]))]
+	print()
 	for row in slice:
 		for i in range(len(row)-1):
 			print(row[i], end='')
