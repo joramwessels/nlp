@@ -29,13 +29,13 @@ def main():
 	N_min_1_freq = countNGrams(corpus, N-1)
 	
 	# Calculating probabilities
-	nGramProbs = probabilities(N_freq, N_min_1_freq)
+	nGramProbs = NGramProbabilities(N_freq, N_min_1_freq,N)
 	question2(nGramProbs, CPF, N)
 	sentenceProb = sentenceProbabilities(NGramProbs, N)
 	question3(sentenceProb, SPF, N)
 	question4(sentenceProbs, SP)
 
-def NGramProbabilities(N_freq, N_min_1_freq):
+def NGramProbabilities(N_freq, N_min_1_freq,n):
 	"""Constructs a dictionary mapping N-grams to their probability.
 	
 	Args:
@@ -45,9 +45,14 @@ def NGramProbabilities(N_freq, N_min_1_freq):
 		dict: A dictionary mapping N-grams to their probability.
 	
 	"""
-	NGramProbs = {}
-	# TODO
-	return NGramProbs
+	nGramProbs = {}
+	for nGram in N_freq.keys():
+		split_line = nGram.strip().split()
+		NMin1Gram = ' '.join(split_line[:n-1])
+		nGramProb = N_freq[nGram] / N_min_1_freq[NMin1Gram]
+		nGramProbs[nGram] = nGramProb
+
+	return nGramProbs
 
 def SentenceProbabilities(NGramProbs, N, start="START", stop="STOP"):
 	"""Constructs a closure calculating sentence probabilities.
