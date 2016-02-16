@@ -40,6 +40,7 @@ def nGramGenerator(sentence, N, start_symbol="START", stop_symbol="STOP"):
 	"""
 	buffer = Buffer(N, start_symbol, stop_symbol)
 	sentence.extend([stop_symbol]*(N-1))
+	yield ' '.join(buffer.next(buffer.start))
 	for word in sentence:
 		yield ' '.join(buffer.next(word))
 
