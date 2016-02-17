@@ -58,7 +58,7 @@ def nGramsFromCorpus(filename, N, line_end='\n\n', word_end=' '):
 	"""
 	sentences = sentencesFromCorpus(filename, line_end=line_end)
 	for sent in sentences:
-		sentence = [w for w in sent.strip().split(word_end) if w != '']
+		sentence = [w for w in sent.strip().replace('\n', word_end).split(word_end) if w != '']
 		ngrams = nGramGenerator(sentence, N)
 		for gram in ngrams:
 			yield gram

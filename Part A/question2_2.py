@@ -15,7 +15,7 @@ def probabilities(NGrams, NMin1Grams, conditional_prob_file, n):
 			if NMin1Gram in NMin1Grams.keys():
 				NMin1Grams_freq = NMin1Grams[NMin1Gram]
 			else:
-				NMin1Grams_freq = 0.000000000000000001
+				NMin1Grams_freq = 0
 
 			ngram = ' '.join(split_line[:n])
 			if ngram in NGrams.keys():
@@ -23,8 +23,11 @@ def probabilities(NGrams, NMin1Grams, conditional_prob_file, n):
 			else:
 				ngram_freq = 0
 
-			nGramProb = ngram_freq / NMin1Grams_freq
-			nGramProbs[ngram] = nGramProb
+			if nMin1Grams == 0:
+				nGramProbs[ngram] = 0
+			else:
+				nGramProb = ngram_freq / NMin1Grams_freq
+				nGramProbs[ngram] = nGramProb
 		
 		#print(nGramProbs)
 
