@@ -95,12 +95,22 @@ def freqsToProbs(biFreqs, uniFreqs, tagVocab, useGTS):
 		list: A list of list, representing a transitional Viterbi matrix.
 	
 	"""
-	gtProbability = turingSmoothing(biFreqs, uniFreqs)
+	if useGTS:
+		probability = turingSmoothing(biFreqs, uniFreqs)
+	else:
+		probability = noSmoothing(biFreqs, uniFreqs)
 	probs = [[0]*len(tagVocab)]*len(tagVocab)
 	for key in biFreqs.keys():
 		(tag1, tag2) = key.split(WE[0])
-		probs[tagVocab.index(tag1)][tagVocab.index(tag2)] = gtProbability(key)
+		probs[tagVocab.index(tag1)][tagVocab.index(tag2)] = probability(key)
 	return probs
+
+def noSmoothing(Nfreq, N1freq):
+	
+	def func(ngram):
+		return 0.5
+	
+	return func
 
 # Copied from assignment 3:
 def turingSmoothing(Nfreq, N1freq):
