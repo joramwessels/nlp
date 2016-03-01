@@ -16,11 +16,12 @@ TD = '/'
 
 class HMM:
 	
-	def __init__(self, filename):
+	def __init__(self, filename, useGTS):
 		tr, wt = POSFreqs(filename, 2, line_ends=LE, word_ends=WE, tag_del=TD)
 		tr1, _ = POSFreqs(filename, 1, line_ends=LE, word_ends=WE, tag_del=TD)
 		self.tagVocab = getTagVocab(wt)
-		self.transitionProbs = freqsToProbs(tr, tr1, self.tagVocab)
+		print("START in tagVocab:", ("START" in self.tagVocab))
+		self.transitionProbs = freqsToProbs(tr, tr1, self.tagVocab, useGTS)
 		self.wordTagProbs, self.wordVocab = indexTagProbs(wt, self.tagVocab)
 	
 	def getTagVocab(self):
@@ -47,7 +48,7 @@ def getTagVocab(frequencies):
 	tagVocab = []
 	for key in frequencies.keys():
 		tag = key.split(TD)[1]
-		if not tag in tagVocab:
+		if (not tag in tagVocab) and (len(key.split(TD)) == 2):
 			tagVocab.append(tag)
 	return tagVocab
 
@@ -65,6 +66,7 @@ def indexTagProbs(frequencies, tagVocab):
 	"""
 	probs = {}
 	for key, value in frequencies.items():
+		if (len(key.split(TD)) > 2): continue
 		(word, tag) = key.split(TD)
 		tagIndex = tagVocab.index(tag)
 		if word in probs.keys():
@@ -80,7 +82,7 @@ def indexTagProbs(frequencies, tagVocab):
 		normalized.append([freq / total for freq in tagProbs])
 	return normalized, wordVocab
 
-def freqsToProbs(biFreqs, uniFreqs, tagVocab):
+def freqsToProbs(biFreqs, uniFreqs, tagVocab, useGTS):
 	print("in HMM.py:freqsToProbs")
 	"""Converts the bigram- and unigram frequencies to a Viterbi matrix.
 	
@@ -88,13 +90,14 @@ def freqsToProbs(biFreqs, uniFreqs, tagVocab):
 		biFreqs (dict): A dictionary mapping tag bigrams to their frequency.
 		uniFreqs (dict): A dictionary mapping tag unigrams to their frequency.
 		tagVocab (list): The vocabulary of possible tags.
+		useGTS (bool): A boolean indicating whether or not to use smoothing.
 	Returns:
 		list: A list of list, representing a transitional Viterbi matrix.
 	
 	"""
 	gtProbability = turingSmoothing(biFreqs, uniFreqs)
 	probs = [[0]*len(tagVocab)]*len(tagVocab)
-	for key, value in biFreqs.items():
+	for key in biFreqs.keys():
 		(tag1, tag2) = key.split(WE[0])
 		probs[tagVocab.index(tag1)][tagVocab.index(tag2)] = gtProbability(key)
 	return probs

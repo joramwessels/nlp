@@ -13,8 +13,9 @@ def main():
 	print([(key, val) for key, val in list(tr.items())[:10]])
 	print([(key, val) for key, val in list(wt.items())[:10]])
 
-def sentenceToNgrams(sentence, N, start_symbol=LS, stop_symbol=LE):
-	sent = [start_symbol]*N + sentence + [stop_symbol]*N
+def sentenceToNgrams(sentence, N, tagDel, start_symbol=LS, stop_symbol=LE):
+	sentence = [start_symbol]*N + sentence + [stop_symbol]*N
+	sent = [word.split(tagDel)[1] for word in sentence if len(word.split(tagDel)) == 2]
 	return [[sent[i+j] for j in range(N)] for i in range(len(sent)-N)]
 
 def countTagNgrams(dict, sentence, N, tagDel, wordDel):
@@ -28,8 +29,7 @@ def countTagNgrams(dict, sentence, N, tagDel, wordDel):
 		wordDel (str): The string functioning as word delimiter.
 	
 	"""
-	sentence = [word.split(tagDel)[1] for word in sentence]
-	ngrams = sentenceToNgrams(sentence, N)
+	ngrams = sentenceToNgrams(sentence, N, tagDel)
 	for ngram in ngrams:
 		gram = wordDel.join(ngram)
 		if gram in dict.keys():
