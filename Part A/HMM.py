@@ -1,12 +1,14 @@
 #! /usr/bin/python
 
 import sys
-from posgram import viterbiMatrices as freqs
+from posgram import countPOSFreqs as POSFreqs
 
 def main():
 	model = HMM(sys.argv[1])
-	print(model.getTransitionProbs('NN'))
-	print(model.getTagProbs('you'))
+	print(model.getTagVocab())
+	print(model.getWordVocab()[:10])
+	print(model.getTransitionProbs()[:5])
+	print(model.getTagProbs()[:5])
 	
 LE = ["./.", "======================================"]
 WE = [' ', '\n']
@@ -15,58 +17,91 @@ TD = '/'
 class HMM:
 	
 	def __init__(self, filename):
-		print("posgram")
-		tr, wt = freqs(filename, 2, line_ends=LE, word_ends=WE, tag_del=TD)
-		print("posgram")
-		tr1, wt1 = freqs(filename, 1, line_ends=LE, word_ends=WE, tag_del=TD)
-		self.transitionProbs = freqsToProbs(tr, tr1)
-		self.wordTagProbs = indexTagProbs(wt)
+		tr, wt = POSFreqs(filename, 2, line_ends=LE, word_ends=WE, tag_del=TD)
+		tr1, _ = POSFreqs(filename, 1, line_ends=LE, word_ends=WE, tag_del=TD)
+		self.tagVocab = getTagVocab(wt)
+		self.transitionProbs = freqsToProbs(tr, tr1, self.tagVocab)
+		self.wordTagProbs, self.wordVocab = indexTagProbs(wt, self.tagVocab)
 	
-	def getTransitionProbs(self, tag):
-		dict = self.transitionProbs
-		if tag in dict.keys():
-			return dict[tag]
-		else:
-			return {}
+	def getTagVocab(self):
+		return self.tagVocab
 	
-	def getTagProbs(self, word):
-		dict = self.wordTagProbs
-		if word in dict.keys():
-			return dict[word]
-		else:
-			return {}
+	def getWordVocab(self):
+		return self.wordVocab
+	
+	def getTransitionProbs(self):
+		return self.transitionProbs
+	
+	def getTagProbs(self):
+		return self.wordTagProbs
 
-def indexTagProbs(frequencies):
-	print("indexTagProbs")
+def getTagVocab(frequencies):
+	"""Extracts the vocabulary of tags from a dict of word-tag frequencies.
+	
+	Args:
+		frequencies (dict): A dictionary mapping word-tags to their frequency.
+	Returns:
+		list: The ordered vocabulary of all possible tags.
+	
+	"""
+	tagVocab = []
+	for key in frequencies.keys():
+		tag = key.split(TD)[1]
+		if not tag in tagVocab:
+			tagVocab.append(tag)
+	return tagVocab
+
+def indexTagProbs(frequencies, tagVocab):
+	print("in HMM.py:indexTagProbs")
+	"""Converts word-tag frequencies into a Viterbi matrix.
+	
+	Args:
+		frequencies (dict): A dictionary mapping word-tags to their frequency.
+		tagVocab (list): The vocabulary of possible tags.
+	Returns:
+		list, list: The Vitarbi matrix of word-tag probabilities, as well as
+					the ordered vocabulary of all words in the corpus.
+	
+	"""
 	probs = {}
 	for key, value in frequencies.items():
 		(word, tag) = key.split(TD)
+		tagIndex = tagVocab.index(tag)
 		if word in probs.keys():
-			probs[word][tag] = value
+			probs[word][tagIndex] = value
 		else:
-			probs[word] = {tag : value}
-	normalized = {}
+			probs[word] = [0]*len(tagVocab)
+			probs[word][tagIndex] = value
+	normalized = []
+	wordVocab = []
 	for word, tagProbs in probs.items():
-		total = sum(list(tagProbs.values()))
-		normalized[word] = {}
-		for tag, prob in tagProbs.items():
-			normalized[word][tag] = prob / total
-	return normalized
+		total = sum(tagProbs)
+		wordVocab.append(word)
+		normalized.append([freq / total for freq in tagProbs])
+	return normalized, wordVocab
 
-def freqsToProbs(biFreqs, uniFreqs):
-	print("freqsToProbs")
+def freqsToProbs(biFreqs, uniFreqs, tagVocab):
+	print("in HMM.py:freqsToProbs")
+	"""Converts the bigram- and unigram frequencies to a Viterbi matrix.
+	
+	Args:
+		biFreqs (dict): A dictionary mapping tag bigrams to their frequency.
+		uniFreqs (dict): A dictionary mapping tag unigrams to their frequency.
+		tagVocab (list): The vocabulary of possible tags.
+	Returns:
+		list: A list of list, representing a transitional Viterbi matrix.
+	
+	"""
 	gtProbability = turingSmoothing(biFreqs, uniFreqs)
-	probs = {}
+	probs = [[0]*len(tagVocab)]*len(tagVocab)
 	for key, value in biFreqs.items():
 		(tag1, tag2) = key.split(WE[0])
-		if tag1 in probs.keys():
-			probs[tag1][tag2] = gtProbability(key)
-		else:
-			probs[tag1] = {tag2 : gtProbability(key)}
+		probs[tagVocab.index(tag1)][tagVocab.index(tag2)] = gtProbability(key)
 	return probs
 
+# Copied from assignment 3:
 def turingSmoothing(Nfreq, N1freq):
-	print("turingSmoothing")
+	print("in HMM.py:turingSmoothing")
 	"""Returns a closure that calculates probability using Turing Smoothing.
 	
 	Args:
