@@ -12,19 +12,53 @@ Compiles using Python version 3.5 with the following command:
 
 """
 import sys, argparse
-from languageModel import LanguageModel
-from NGrams import sentencesFromCorpus
+import numpy as np
+from HMM import HMM
+from posgram import readPOSCorpus
+
+LE = ["./.", "======================================"]
+WE = [' ', '\n']
+TD = '/'
 
 def main():
 	train, test, predicted, smoothing = parseArgs(sys.argv[1:])
-	
-	# train model with 'train'
-	
-	# test model on 'test'
-	
-	# save predictions in 'predicted'
-	
-	# print accuracy with- and without smoothing
+	model = trainModel(train, smoothing)
+	acc = testModel(model, test, predicted)
+	print("Accuracy: %.5f" %acc)
+
+def trainModel(corpus, smoothing):
+	# build viterbi matrices
+	model = HMM(corpus, smoothing)
+	# closure using viterbi algorithm
+	def tagger(sentence):
+		return
+	# return closure
+	return tagger
+
+def viterbi(trans, ngram):
+	pass
+
+def testModel(model, testCorpus, predictions):
+	correct = []
+	with open(predictions, 'w') as out:
+		sentences = readPOSCorpus(testCorpus, LE, WE)
+		for sent in sentences:
+			if len(sent) > 15: continue
+			words = []
+			tags = []
+			for token in sentence:
+				spl = token.split(TD)
+				if len(spl) != 2: continue
+				words.append(spl[0])
+				tags.append(spl[1])
+			predictions = model(words)
+			out.write(' '.join(tags) + '\n')
+			for i in range(len(tags)):
+				if tags[i] == predictions[i]:
+					correct.append(1)
+				else:
+					correct.append(0)
+	return np.mean(correct)
 
 def parseArgs(args):
 	"""Parses the arguments using argparse.
@@ -72,3 +106,26 @@ def parseArgs(args):
 
 if __name__ == "__main__":
 	main()
+
+"""
+
+train
+	read file
+	seperate sentences
+	parse sentence
+	word/tag frequencies
+	tag bigram frequencies
+	tag bigram probabilities
+	Viterbi matrices
+	closure using viterbi algorithm
+
+test
+	read file
+	seperate sentences
+	parse sentence
+	check length > 15
+	tag sentence
+	save tags
+	calculate accuracy
+
+"""
