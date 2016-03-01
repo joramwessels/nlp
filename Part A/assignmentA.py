@@ -31,7 +31,28 @@ def trainModel(corpus, smoothing):
 	model = HMM(corpus, smoothing)
 	# closure using viterbi algorithm
 	def tagger(sentence):
-		return
+		print("Tagging...")
+		tagSeq = []
+		transProbs = model.getTransitionProbs() #probs[tagVocab.index(tag1)][tagVocab.index(tag2)]
+		observProbs = model.getTagProbs() #word tagindex
+		tagOrder = model.getTagVocab()
+		wordOrder = model.getWordVocab()
+		
+		sTransProbs = np.array(transProbs[tagOrder.index('<s>')])
+		npTransProbs = np.array(transProbs)
+		
+		N = len(tagOrder) #amount of tags
+		T = len(sentence) #amount of word observations
+		viterbi = np.zeros((N,T))
+		
+		viterbi[:,0] = sTransProbs*np.array(observProbs[sentence[0]])
+		tagSeq.append(tagOrder[np.argmax(viterbi[:,0])]) # adds tag with the highest probability
+		
+		for t in range(1,T):
+			for s in range(0,N):
+				viterbi[s,t] = np.max(viterbi[:,t-1]*npTransProbs[:,s])*observProbs[sentence[t]][s]
+				tagSeq.append(tagOrder[np.argmax(viterbi[:,t])])
+		return tagSeq
 	# return closure
 	return tagger
 
