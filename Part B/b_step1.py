@@ -8,14 +8,14 @@ Compiles using Python version 3.5 with the following command:
 	./b-step1.py -input [non-binarized]	-output [binarized]
 """
 
-import sys, argparse
+import sys, argparse, subprocess
 from binarizer import parseTreebank
 
 
 def main():
 	input, output = parseArgs(sys.argv[1:])
 	treebank = readTreebank(input)
-	binarized = parseTreebank(treebank)
+	binarized = binarizeTreebank(treebank)
 	saveBinarized(binarized, output)
 
 def readTreebank(input):
@@ -53,6 +53,36 @@ def parseLine(line, sym_open='(', sym_close=')', delimiter=' '):
 		else:
 			stack[-1][-1] += char
 
+def binarizeTreebank(treebank):
+	return [binarize(tree) for tree in treebank]
+
+def binarize(sentence):
+	Path = "@" + sentence[0] + "->"
+	branches = sentence[1:]
+	branchLength = len(branches)
+	branches = [branches[i][0] for i in range(branchLength)]
+	
+	if(not sentence[0].isalpha() or not isinstance(sentence[1],list)):
+		return sentence
+	if(branchLength == 2):
+		return [sentence[0], binarize(sentence[1]) ,binarize(sentence[1])]
+	if(branchLength == 1):
+		return [sentence[0], binarize(sentence[1])]
+
+	def b(Path ,i):
+		currentLoc = branches[i-2]
+		if( i == branchLength):
+			newPath = Path + '_' + currentLoc 
+			binarizedSent = binarize(sentence[i])
+			return [newPath , binarizedSent]
+		else:
+			i += 1
+			newPath = Path + '_' + currentLoc
+			binarizedSent = binarize(sentence[i-1])
+			return [ newPath, binarizedSent] + [b(newPath,i)]
+			
+	return sentence[:2]+[b(Path,2)]
+
 def saveBinarized(binarized, output):
 	"""Saves the parsed treebank in the output location.
 	
@@ -62,8 +92,8 @@ def saveBinarized(binarized, output):
 	
 	"""
 	with open(output, 'w') as out:
-		for bin in binarized:
-			out.write(bin + '\n')
+		for tree in binarized:
+			out.write(str(tree) + '\n')
 
 def parseArgs(args):
 	"""Parses the command line arguments.
