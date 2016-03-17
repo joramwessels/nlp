@@ -1,11 +1,27 @@
-
-sentence = ['S', ['NP', ['DT', 'A'], ['NN', 'record'], ['NN','date']]]
-sentence2 = ['NP', ['NNP', 'Rolls Royce'], ['NNP', 'motor'], ['NNPS','cars'],['NNP','Inc']]
-sentence3 = ['NP', ['DT', 'A'], ['NN', 'record'], ['NN','date'],['NP', ['NNP', 'Rolls Royce'], ['NNP', 'motor'], ['NNPS','cars'],['NNP','Inc']]]
-sentence4 = ['ROOT', ['S', ['NP', ['NNP', 'Ms.'], ['NNP', 'Haag']], ['VP', ['VBZ', 'plays'], ['NP', ['NNP', 'Elianti']]], ['.', '.']]]
-
+#! /usr/bin/python
+"""
+NLP Part B
+Amir Alnomani		10437797
+Maurits Offerhaus	10400036
+Joram Wessels		10631542
+"""
 hValue = 2
 vValue = 2
+
+def binarizeTreebank(treebank, h, v):
+	"""Sets the global 'hValue' and 'vValue' variables and binarizes all trees.
+	
+	Args:
+		treebank (list): A list of non-binarized treebanks.
+		h (int): The order of horizontal Markovization.
+		v (int): The order of vertical Markovization.
+	Returns:
+		list: A list of binarized treebanks.
+	
+	"""
+	global hValue, vValue
+	hValue, vValue = h, v
+	return [binarize(tree) for tree in treebank]
 
 def binarize(sent, v=['']*vValue, h=['']*hValue):
 	"""Binarizes a sentence using both vertical- and horizontal Markovization of
@@ -72,5 +88,3 @@ def printTree(sent, depth):
 	else:
 		print(sent[0])
 		for x in sent[1:]: printTree(x, depth + 1)
-
-printTree(binarize(sentence), 0)
