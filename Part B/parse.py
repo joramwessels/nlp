@@ -27,11 +27,6 @@ def binarize(sent, v=['']*vValue, h=['']*hValue):
 	"""Binarizes a sentence using both vertical- and horizontal Markovization of
 		the orders specified by the 'vValue' and 'hValue' variables respectively.
 	
-	Note:
-		[POS word] -> [POS word]
-		[POS2 Non-Terminal] -> [POS2^POS1 binarize(Non-Terminal)]
-		[POS2 NT1 NT2] -> [POS2^POS1 binarize(NT1) [@POS2^POS1->_NT1 binarize(NT2)]]
-		[POS2 NT1 NT2 NT3] -> [POS2^POS1 NT1 [POS3^POS2 NT2 NT3]]
 	Args:
 		sent (list): The sentence to be binarized, represented as a list of lists.
 		v (list): (optional) The vertical Markovization queue that keeps track
@@ -54,7 +49,7 @@ def binarize(sent, v=['']*vValue, h=['']*hValue):
 	# upon encountering a unary node, clear the horizontal Markovization queue and binarize the first element
 	if len(sent) == 2: return [joinLabels('^', vert), binarize(sent[1], v=vert)]
 	# upon encountering a binary node, binarize the right node using the horizontal Markovization queue
-	elif len(sent) == 3: rightNode = [rightLabel, binarize(sent[2], v=vert, h=hori)]
+	elif len(sent) == 3: rightNode = [rightLabel, binarize(sent[2], v=vert)]
 	# upon encountering more than 2 nodes, binarize every node after index 1 using the same
 	# Markovization state as the current node and append the content to the new POS tag
 	elif len(sent) > 3: rightNode = [rightLabel] + binarize([sent[0]] + sent[2:], v=v, h=hori)[1:]
